@@ -60,9 +60,24 @@ Or pass custom paths with `-DJUCE_DIR=... -DEURORACK_DIR=...`.
 
 ### Build
 
+If JUCE and eurorack are siblings of the repo, just run:
+
 ```bash
-cd 2-OP
 cmake -B build -G Ninja \
+    -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" \
+    -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0 \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_C_COMPILER=$(xcrun -f clang) \
+    -DCMAKE_CXX_COMPILER=$(xcrun -f clang++)
+cmake --build build --config Release
+```
+
+If they're elsewhere, pass the paths explicitly:
+
+```bash
+cmake -B build -G Ninja \
+    -DJUCE_DIR=/path/to/JUCE \
+    -DEURORACK_DIR=/path/to/eurorack \
     -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" \
     -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0 \
     -DCMAKE_BUILD_TYPE=Release \
@@ -85,6 +100,16 @@ cp -R build/TwoOpFM_artefacts/Release/VST3/2-OP.vst3 \
       ~/Library/Audio/Plug-Ins/VST3/
 codesign --force --sign - ~/Library/Audio/Plug-Ins/VST3/2-OP.vst3
 ```
+
+### Package (sign, notarize, DMG)
+
+The `scripts/package.sh` script builds, code-signs, creates a DMG, and notarizes it in one step. It requires an Apple Developer ID certificate and a notarytool keychain profile (see the script header for setup).
+
+```bash
+JUCE_DIR=/path/to/JUCE EURORACK_DIR=/path/to/eurorack ./scripts/package.sh
+```
+
+The env vars default to sibling directories (`../JUCE`, `../eurorack`) if not set.
 
 ## Formats
 

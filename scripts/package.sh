@@ -14,8 +14,11 @@ set -euo pipefail
 #         --password "xxxx-xxxx-xxxx-xxxx"
 #
 # Usage:
-#   cd 2-OP && ./scripts/package.sh
+#   ./scripts/package.sh
 # ------------------------------------------------------------------
+
+REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+cd "${REPO_ROOT}"
 
 PLUGIN_NAME="2-OP"
 VERSION="1.1.0"
@@ -35,18 +38,25 @@ SIGN_ID="Developer ID Application"
 # Name of the keychain profile created by xcrun notarytool store-credentials
 NOTARY_PROFILE="notarytool-profile"
 
+# ---- Dependency paths ----
+# Override with environment variables if JUCE/eurorack are not siblings of this repo.
+JUCE_DIR="${JUCE_DIR:-${REPO_ROOT}/../JUCE}"
+EURORACK_DIR="${EURORACK_DIR:-${REPO_ROOT}/../eurorack}"
+
 # ------------------------------------------------------------------
 # 1. Build
 # ------------------------------------------------------------------
 echo "==> Building ${PLUGIN_NAME} v${VERSION}..."
-/opt/homebrew/bin/cmake -B "${BUILD_DIR}" -G Ninja \
+cmake -B "${BUILD_DIR}" -G Ninja \
+    -DJUCE_DIR="${JUCE_DIR}" \
+    -DEURORACK_DIR="${EURORACK_DIR}" \
     -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" \
     -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0 \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_C_COMPILER="$(xcrun -f clang)" \
     -DCMAKE_CXX_COMPILER="$(xcrun -f clang++)"
 
-/opt/homebrew/bin/cmake --build "${BUILD_DIR}" --config Release
+cmake --build "${BUILD_DIR}" --config Release
 
 # ------------------------------------------------------------------
 # 2. Code sign (hardened runtime + timestamp, required for notarization)
