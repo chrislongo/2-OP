@@ -1,0 +1,19 @@
+# macOS
+.DS_Store
+._*
+
+# Build
+build/
+
+# IDE
+.vscode/
+.idea/
+*.xcodeproj/
+*.xcworkspace/
+
+# Internal docs
+CLAUDE.md
+mocks/
+docs/DESIGN.md
+docs/REQUIREMENTS.md
+docs/TODO.md
